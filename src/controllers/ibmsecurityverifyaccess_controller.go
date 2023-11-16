@@ -497,6 +497,32 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
         },
     })
 
+    /* If a config snapshot secrets property has been defiend add 
+        it to runtime containers
+    */
+    if m.Spec.SnapshotSecrets != "" {
+        env = append(env, corev1.EnvVar {
+            Name: "CONFIG_SNAPSHOT_SECRETS",
+            Value: m.Spec.SnapshotSecrets,
+        })
+    }
+
+
+    /* Add TLS CAcert properties if they exist, else use kubernetes 
+        PKI as the default
+    */
+    if m.Spec.SnapshotTLSCacert != "" {
+        env = append(env, corev1.EnvVar {
+            Name: "CONFIG_SERVICE_TLS_CACERT",
+            Value: m.Spec.SnapshotTLSCacert,
+        })
+    } else {
+        env = append(env, corev1.EnvVar {
+            Name: "CONFIG_SERVICE_TLS_CACERT",
+            Value: "kubernetes",
+        })
+    }
+
     /*
      * Add the rest of the environment variables (if specified).
      */
