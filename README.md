@@ -248,6 +248,18 @@ spec:
   # The name of the ServiceAccount to use to run the managed pod.
   # serviceAccountName: "default"
 
+  # The X509 certificate to verify the connection to the configuration snapshot
+  # service. The default value for this property is "operator", which reads the "tls.cert"
+  # value from the verify-access-operator secret created in the namespace that the Verify
+  # Access pods are deployed to.
+  snapshotTLSCacert: "operator"
+
+
+  # The ordered list of secrets used to decrypt configuration snapshot files. This
+  # property is required if the configuration snapshot file being used was encrypted
+  # when it was created.
+  snapshotSecrets: "secreteToDecryptSnapshotFiles||AnotherSecretToDecryptFiles"
+
   # Any specific container information which is associated with this
   # container.  The container options include:
   #    env

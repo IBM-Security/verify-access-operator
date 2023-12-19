@@ -1,5 +1,3 @@
-# Copyright contributors to the IBM Security Verify Access Operator project
-
 FROM scratch
 
 # Core bundle labels.
@@ -8,15 +6,13 @@ LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
 LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
 LABEL operators.operatorframework.io.bundle.package.v1=ibm-security-verify-access-operator
 LABEL operators.operatorframework.io.bundle.channels.v1=stable
-LABEL operators.operatorframework.io.metrics.builder=operator-sdk-v1.7.1+git
+LABEL operators.operatorframework.io.metrics.builder=operator-sdk-v1.32.0
 LABEL operators.operatorframework.io.metrics.mediatype.v1=metrics+v1
 LABEL operators.operatorframework.io.metrics.project_layout=go.kubebuilder.io/v3
 
 # Labels for testing.
 LABEL operators.operatorframework.io.test.mediatype.v1=scorecard+v1
 LABEL operators.operatorframework.io.test.config.v1=tests/scorecard/
-
-LABEL com.redhat.openshift.versions="v4.6"
 
 # Copy files to locations specified by labels.
 COPY bundle/manifests /manifests/
