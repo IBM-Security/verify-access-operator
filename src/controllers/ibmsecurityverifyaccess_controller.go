@@ -627,7 +627,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 
 	if licenseAnnotations != nil {
 		annotations := map[string]string{
-			"productMetrc":             "PROCESSOR_VALUE_UNIT",
+			"productMetric":             "PROCESSOR_VALUE_UNIT",
 			"productChargedContainers": "All",
 			"productName":              "IBM Security Verify Access Virtual Edition",
 			"productId":                "e2ba21cf5df245bb8524be1957857d9f",
