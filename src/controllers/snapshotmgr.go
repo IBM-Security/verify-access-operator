@@ -513,16 +513,6 @@ func (mgr *SnapshotMgr) serve(w http.ResponseWriter, r *http.Request) {
 			type SnapshotProperties map[string]interface{}
 			var snapshots []SnapshotProperties
 			for _, snapshot := range fileList {
-				/*snapshotInfo, err := snapshot.Info()
-				  if err != nil {
-				      mgr.webMutex.RUnlock()
-				      mgr.log.V(5).Error(err, "Error getting properites of " + snapshot.Name() + "snapshot")
-				      http.Error(w,
-				          http.StatusText(http.StatusBadRequest),
-				          http.StatusBadRequest)
-				      return
-				  }
-				*/
 				snapshots = append(snapshots, SnapshotProperties{"name": snapshot.Name(), "size": snapshot.Size(),
 					"lastModified": snapshot.ModTime().String()})
 			}
