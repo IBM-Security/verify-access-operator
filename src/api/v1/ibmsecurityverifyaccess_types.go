@@ -169,15 +169,19 @@ type IBMSecurityVerifyAccessSpec struct {
 	// +optional
 	SnapshotId string `json:"snapshotId"`
 
-	// List of secrets to decrypt configuration snapshot files. Secrets are separated by '||'
+	// List of secrets to decrypt configuration snapshot files. Secrets are separated by '||'. This option is the
+	// equivalent of setting the CONFIG_SNAPSHOT_SECRETS environment property.
 	// +optional
 	SnapshotSecrets string `json:"snapshotSecrets"`
 
 	//+kubebuilder:default=operator
 	// SnapshotTLSCacert is a string which defines how the Verify Access runtime containers
-	// verify connections to the snapshot management service. The default option for this
+	// verify connections to the snapshot management service. This option is the equivalent
+	// of setting the CONFIG_SERVICE_TLS_CACERT environment property. The default option for this
 	// property is to read the X509 certificate for the Operator's snapshot management service
 	// from the verify-access-operator secret.
+	// Note: Administrators must ensure that the service account for the runtime containers has
+	// permission to read Secrets in the namespace that the Pod is deployed to in order for this to work.
 	// +optional
 	SnapshotTLSCacert string `json:"snapshotTLSCacert"`
 
