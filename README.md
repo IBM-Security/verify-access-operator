@@ -255,6 +255,26 @@ spec:
   snapshotTLSCacert: "operator"
 
 
+  # The IBM License Metric Tool annotations to add to the runtime container. These annotations a required
+  # by IBM to track license useage for the IBM Security Verfy Access product. Administartors have the option
+  # of using licence codes for WebSEAL, Advanced Access Cotnrol, Federation or Enterprise; as well as production
+  # or non-production (development) licenses. The actual license codes you sould deploy will depend on your 
+  # licensing agreement with IBM.
+  ilmtAnnotations:
+    module: welseal
+    production: true
+
+  # Administarators can optionally set additional annotations to add to deployed Verify Access runtime
+  # containers. This may be used for integration with third party applications such as log aggregation 
+  # or infrastructure monitoring tools. Character restrictions for custom annotations are the same for
+  # any other Kubernets annotation.
+  # More info can be found at:
+  #     https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set
+  customAnnotations:
+  - key: my.custom/Annotation
+    value: annotationToAdd
+
+
   # The ordered list of secrets used to decrypt configuration snapshot files. This
   # property is required if the configuration snapshot file being used was encrypted
   # when it was created.
