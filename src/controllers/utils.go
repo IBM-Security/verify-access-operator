@@ -5,10 +5,10 @@
 package controllers
 
 import (
-    "github.com/go-logr/logr"
-    "io/ioutil"
-    "k8s.io/client-go/tools/clientcmd"
-    "k8s.io/client-go/tools/clientcmd/api"
+	"github.com/go-logr/logr"
+	"io/ioutil"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 /*****************************************************************************/
@@ -19,38 +19,37 @@ import (
  */
 
 func getLocalNamespace(log logr.Logger) (namespace string, err error) {
-    var namespaceBytes []byte
-    var clientCfg      *api.Config
+	var namespaceBytes []byte
+	var clientCfg *api.Config
 
-    log.V(9).Info("Entering a function", "Function", "getLocalNamespace")
+	log.V(9).Info("Entering a function", "Function", "getLocalNamespace")
 
-    /*
-     * Work out the namespace which should be used.  In a Kubernetes
-     * environment we read this from the namespace file, otherwise we use
-     * the default namespace in the kubectl file.
-     */
+	/*
+	 * Work out the namespace which should be used.  In a Kubernetes
+	 * environment we read this from the namespace file, otherwise we use
+	 * the default namespace in the kubectl file.
+	 */
 
-    namespace = "default"
+	namespace = "default"
 
-    namespaceBytes, err = ioutil.ReadFile(k8sNamespaceFile)
+	namespaceBytes, err = ioutil.ReadFile(k8sNamespaceFile)
 
-    if err != nil {
-        clientCfg, err = clientcmd.NewDefaultClientConfigLoadingRules().Load()
+	if err != nil {
+		clientCfg, err = clientcmd.NewDefaultClientConfigLoadingRules().Load()
 
-        if err != nil {
-            log.Error(err, "Failed to load the client configuration")
-            return
-        }
+		if err != nil {
+			log.Error(err, "Failed to load the client configuration")
+			return
+		}
 
-        namespace = clientCfg.Contexts[clientCfg.CurrentContext].Namespace
-    } else {
-        namespace = string(namespaceBytes)
-    }
+		namespace = clientCfg.Contexts[clientCfg.CurrentContext].Namespace
+	} else {
+		namespace = string(namespaceBytes)
+	}
 
-    log.V(5).Info("Found a namespace to use", "Namespace", namespace)
+	log.V(5).Info("Found a namespace to use", "Namespace", namespace)
 
-    return
+	return
 }
 
 /*****************************************************************************/
-
