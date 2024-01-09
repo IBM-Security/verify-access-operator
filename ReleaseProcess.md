@@ -49,7 +49,7 @@ At a high level, to certify the operator, you need to:
 	2. Test the operator and submit a pull request.  
 
 
-	> It is important that in the pull request the images contained within the cluster service version file are updated, replacing the tag name with the corresponding sha256 digest.
+	> It is important that in the pull request the images contained within the cluster service version file are updated, replacing the tag name with the corresponding sha256 digest.  You will also need to add a `spec.relatedImages` entry into the file which contains all of the images which are used by the operator (just copy a cluster service version file from a previous version of the operator and update the sha256 digest for each image).
 
 ## Bundle Testing
 
