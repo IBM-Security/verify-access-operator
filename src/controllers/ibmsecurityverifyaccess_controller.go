@@ -313,8 +313,6 @@ func (r *IBMSecurityVerifyAccessReconciler) createSecret(
 		var requireUpdate bool
 		for k, v := range secret.Data {
 			strVal := fmt.Sprintf("%s", v)
-			r.Log.V(7).Info(fmt.Sprintf("Encoded value %s", strVal))
-			r.Log.V(7).Info(fmt.Sprintf("In memory value: %s", r.snapshotMgr.creds[k]))
 			if _, ok := r.snapshotMgr.creds[k]; ok {
 				if r.snapshotMgr.creds[k] != strVal {
 					requireUpdate = true
