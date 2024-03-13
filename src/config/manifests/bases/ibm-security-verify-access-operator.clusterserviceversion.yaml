@@ -1,4 +1,5 @@
 # Copyright contributors to the IBM Security Verify Access Operator project
+
 apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
@@ -9,8 +10,7 @@ metadata:
     certified: "false"
     containerImage: icr.io/isva/verify-access-operator:0000.0000.0000
     createdAt: --date--
-    description: The IBM Security Verify Access Operator manages the lifecycle of
-      IBM Security Verify Access worker containers.
+    description: The IBM Security Verify Access Operator manages the lifecycle of IBM Security Verify Access worker containers.
     repository: https://github.com/IBM-Security/verify-access-operator
     support: IBM
   name: ibm-security-verify-access-operator.v0000.0000.0000
@@ -19,43 +19,11 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: IBMSecurityVerifyAccess is the Schema for the ibmsecurityverifyaccesses
-        API.
+    - description: IBMSecurityVerifyAccess is the Schema for the ibmsecurityverifyaccesses API.
       displayName: IBMSecurity Verify Access
       kind: IBMSecurityVerifyAccess
       name: ibmsecurityverifyaccesses.ibm.com
       version: v1
-      resources:
-      - kind: Deployment
-        name: ''
-        version: v1
-      specDescriptors:
-      - description: The name of the IBM Security Verify Access image to be used.
-        displayName: Image
-        path: image
-        x-descriptors:
-          - 'urn:alm:descriptor:com.tectonic.ui:text'
-      - description: The name of the Verify Access instance which is being deployed.  This value is only used for WRP and DSC deployments and is ignored for Runtime deployments.  
-        displayName: Instance
-        path: instance
-        x-descriptors:
-          - 'urn:alm:descriptor:com.tectonic.ui:text'
-      - description: The number of pods which will be started for the deployment.
-        displayName: Replicas
-        path: replicas
-        x-descriptors:
-          - 'urn:alm:descriptor:com.tectonic.ui:number'
-      - description:  A boolean flag which indicates whether the deployment should be automatically restarted when a new snapshot is published.
-        displayName: Auto Restart
-        path: autoRestart
-        x-descriptors:
-          - 'urn:alm:descriptor:com.tectonic.ui:booleanSwitch'
-      statusDescriptors:
-        - description: The list of status conditions associated with the custom resource.
-          displayName: Conditions
-          path: conditions
-          x-descriptors:
-            - 'urn:alm:descriptor:io.kubernetes.conditions'
   description: |+
     In a world of highly fragmented access management environments, [IBM Security Verify Access](https://www.ibm.com/au-en/products/verify-access) helps you simplify your users' access while more securely adopting web, mobile and cloud technologies. This solution helps you strike a balance between usability and security through the use of risk-based access, single sign-on, integrated access management control, identity federation and its mobile multi-factor authentication capability, IBM Verify. Take back control of your access management with IBM Security Verify Access.
 
@@ -101,4 +69,4 @@ spec:
   provider:
     name: IBM
     url: https://www.ibm.com
-  version: 0.0.0
+  version: 0000.0000.0000
