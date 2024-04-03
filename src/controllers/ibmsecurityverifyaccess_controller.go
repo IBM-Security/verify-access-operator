@@ -16,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"context"
-	"encoding/base64"
 	"fmt"
 	"strings"
 	"sync"
@@ -313,12 +312,16 @@ func (r *IBMSecurityVerifyAccessReconciler) createSecret(
 			"Secret.Name", operatorName)
 		var requireUpdate bool
 		for k, v := range secret.Data {
-			decodedValue := make([]byte, base64.StdEncoding.DecodedLen(len(v)))
-			l, _ := base64.StdEncoding.Decode(decodedValue, v)
-			if r.snapshotMgr.creds[k] != string(decodedValue[:l]) {
-				requireUpdate = true
+			strVal := fmt.Sprintf("%s", v)
+			if _, ok := r.snapshotMgr.creds[k]; ok {
+				if r.snapshotMgr.creds[k] != strVal {
+					requireUpdate = true
+				}
+			} else {
+				r.Log.V(1).Info(fmt.Sprintf("Unknown key [%s] found in verify-access-operator secret!", k))
 			}
 		}
+		r.Log.V(7).Info(fmt.Sprintf("Secret require update %t", requireUpdate))
 		if requireUpdate == true {
 			secret = &corev1.Secret{
 				Type: apiv1.SecretTypeOpaque,
