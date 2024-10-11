@@ -549,6 +549,9 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 			Name:  "CONFIG_SERVICE_TLS_CACERT",
 			Value: m.Spec.SnapshotTLSCacert,
 		})
+		if m.Spec.SnapshotTLSCacert == "operator" {
+			addSnapMgrCert = true
+		}
 
 	} else {
 		addSnapMgrCert = true
@@ -604,7 +607,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 		volMnts = append(volMnts, corev1.VolumeMount{
 			Name:      operatorName,
 			ReadOnly:  true,
-			MountPath: k8sSnapMgrCertDir,
+			MountPath: k8sSnapMgrCertFile,
 			SubPath:   certFieldName,
 		})
 		vols = append(vols, corev1.Volume{
@@ -622,7 +625,6 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 			},
 		})
 	}
-	r.Log.V(1).Info(fmt.Printf("%#v\n", maxVolMnts))
 	/*
 	 * Set up the rest of the deployment descriptor.
 	 */
