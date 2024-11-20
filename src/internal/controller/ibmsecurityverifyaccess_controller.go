@@ -674,7 +674,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 		annotations := map[string]string{
 			"productMetric":            "PROCESSOR_VALUE_UNIT",
 			"productChargedContainers": "All",
-			"productName":              "IBM Security Verify Access Virtual Edition",
+			"productName":              "IBM Verify Identity Access Virtual Edition",
 			"productId":                "e2ba21cf5df245bb8524be1957857d9f",
 		}
 		prod := m.Spec.LicenseAnnotations.Production
@@ -682,34 +682,34 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 		switch module {
 		case "access_control":
 			if prod == false {
-				annotations["productName"] = "IBM Security Verify Access Virtual Edition AAC Module Non-Production AOS"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Edition AAC Module Non-Production AOS"
 				annotations["productId"] = "707987d5b0ca48e8af8e5856c027980f"
 			} else {
-				annotations["productName"] = "IBM Security Verify Access Virtual Edition AAC Module AOS"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Edition AAC Module AOS"
 				annotations["productId"] = "25d814176e0f4f21b64db66b916414d4"
 			}
 
 		case "federation":
 			if prod == false {
-				annotations["productName"] = "IBM Security Verify Access Virtual Ed Federation Module Non-Production AOS"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Ed Federation Module Non-Production AOS"
 				annotations["productId"] = "01a9d83608044a4687b3d29a0d4d0a35"
 			} else {
-				annotations["productName"] = "IBM Security Verify Access Virtual Edition Federation Module AOS"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Edition Federation Module AOS"
 				annotations["productId"] = "13ce5584032a42eab5704711369a11a4"
 			}
 
 		case "enterprise":
 			if prod == false {
-				annotations["productName"] = "IBM Security Verify Access Virtual Enterprise Edition Non-Production"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Enterprise Edition Non-Production"
 				annotations["productId"] = "de0d1dce07f145ce9380be5182a68544"
 			} else {
-				annotations["productName"] = "IBM Security Verify Access Virtual Enterprise Edition"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Enterprise Edition"
 				annotations["productId"] = "62b1cf23e32140a684284a0cf9a37329"
 			}
 
 		default:
 			if prod == false {
-				annotations["productName"] = "IBM Security Verify Access Virtual Edition Non-Production"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Edition Non-Production"
 				annotations["productId"] = "8e4a78ab1e9249b1b46b6870babf4945"
 			} // else we use the default
 		}
