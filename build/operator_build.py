@@ -71,7 +71,7 @@ def validate_source_path(source_path):
 
         sys.exit(1)
 
-    go_module = os.path.join(source_path, "src", "main.go")
+    go_module = os.path.join(source_path, "src", "cmd", "main.go")
 
     if not os.path.isfile(go_module):
         print("Error> the specified source path is invalid: {0}!".format(

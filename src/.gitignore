@@ -22,6 +22,8 @@ testbin/*
 # Additional generated files to skip.
 api/v1/zz_generated.deepcopy.go
 bundle/*
+bundle.yaml
+bundle.Dockerfile
 
 # editor and IDE paraphernalia
 .idea

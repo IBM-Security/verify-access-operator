@@ -1,4 +1,4 @@
-# IBM Security Verify Access Operator
+# IBM Verify Identity Access Operator
   * [Overview](#overview)
   * [Installation](#installation)
     + [RedHat OpenShift Environment](#redhat-openshift-environment)
@@ -19,17 +19,19 @@
 
 ## Overview
 
-In a world of highly fragmented access management environments, [IBM Security Verify Access](https://www.ibm.com/au-en/products/verify-access) helps you simplify your users' access while more securely adopting web, mobile and cloud technologies. This solution helps you strike a balance between usability and security through the use of risk-based access, single sign-on, integrated access management control, identity federation and its mobile multi-factor authentication capability, IBM Verify. Take back control of your access management with IBM Security Verify Access.
+In a world of highly fragmented access management environments, [IBM Verify Identity Access](https://www.ibm.com/au-en/products/verify-access) helps you simplify your users' access while more securely adopting web, mobile and cloud technologies. This solution helps you strike a balance between usability and security through the use of risk-based access, single sign-on, integrated access management control, identity federation and its mobile multi-factor authentication capability, IBM Verify. Take back control of your access management with IBM Verify Identity Access.
 
-For a detailed description of IBM Security Verify Access refer to the [Official documentation](https://www.ibm.com/docs/en/sva).
+For a detailed description of IBM Verify Identity Access refer to the [Official documentation](https://www.ibm.com/docs/en/sva).
 
-The IBM Security Verify Access operator provides lifecycle management of the lightweight containers which are used to protect an environment, namely:
+The IBM Verify Identity Access operator provides lifecycle management of the lightweight containers which are used to protect an environment, namely:
 
 * [Web Reverse Proxy](https://www.ibm.com/docs/en/sva/latest?topic=support-docker-image-verify-access-web-reverse-proxy)
+                                                                        ds-docker-image-verify-identity-access-web-reverse-proxy
 * [Runtime](https://www.ibm.com/docs/en/sva/latest?topic=support-docker-image-verify-access-runtime)
+                                                            support-docker-image-verify-identity-access-runtime
 * [Distributed Session Cache](https://www.ibm.com/docs/en/sva/latest?topic=support-docker-image-verify-access-distributed-session-cache)
 
-The operator will manage the deployment of these lightweight IBM Security Verify Access worker containers, and also control the rolling restart of these containers when a configuration snapshot is updated, as depicted in the following figure.
+The operator will manage the deployment of these lightweight IBM Verify Identity Access worker containers, and also control the rolling restart of these containers when a configuration snapshot is updated, as depicted in the following figure.
 
 ![Overview](src/images/Overview.png)
 
@@ -47,7 +49,7 @@ Some points to note about the figure:
 
 ### RedHat OpenShift Environment
 
-The IBM Security Verify Access Operator is available from the RedHat community operator catalog.  Information on how to install a community operator in OpenShift can be obtained from the official RedHat OpenShift documentation.
+The IBM Verify Identity Access Operator is available from the RedHat community operator catalog.  Information on how to install a community operator in OpenShift can be obtained from the official RedHat OpenShift documentation.
 
 ### Standard Kubernetes Environment
 
@@ -61,31 +63,31 @@ The information provided by [OperatorHub.io](https://operatorhub.io/) allows the
 
 ##### Installing
 
-To install the IBM Security Verify Access operator from OperatorHub.io:
+To install the IBM Verify Identity Access operator from OperatorHub.io:
 
-1. Access the [IBM Security Verify Access operator page on OperatorHub.io](https://operatorhub.io/operator/ibm-security-verify-access-operator) in a browser.
+1. Access the [IBM Verify Identity Access operator page on OperatorHub.io](https://operatorhub.io/operator/ibm-security-verify-access-operator) in a browser.
 
 2. Click the Install button on the page and follow the installation instructions.
 
-3. Ensure that the IBM Security Verify Access operator has been created by the Operator Lifecycle Manager. The phase should be set to "Succeeded". Note that this may take a few minutes.
+3. Ensure that the IBM Verify Identity Access operator has been created by the Operator Lifecycle Manager. The phase should be set to "Succeeded". Note that this may take a few minutes.
 
 ```shell
 kubectl get csv -n operators
 
 NAME                              DISPLAY                               VERSION   REPLACES   PHASE
-verify-access-operator.v23.3.0    IBM Security Verify Access Operator   23.3.0              Succeeded
+verify-access-operator.v24.12.0   IBM Verify Identity Access Operator   24.12.0              Succeeded
 ``` 
 
-At this point the Operator Lifecycle Manager has been installed into the Kubernetes cluster, the IBM Security Verify Access operator has been deployed and a subscription has been created that will monitor for any updates to the operator on OperatorHub.io. The IBM Security Verify Access operator is now operational and any subsequent custom resources of the kind "IBMSecurityVerifyAccess" will result in the operator being invoked to create the deployment.
+At this point the Operator Lifecycle Manager has been installed into the Kubernetes cluster, the IBM Verify Identity Access operator has been deployed and a subscription has been created that will monitor for any updates to the operator on OperatorHub.io. The IBM Verify Identity Access operator is now operational and any subsequent custom resources of the kind "IBMSecurityVerifyAccess" will result in the operator being invoked to create the deployment.
 
 #### Manual Installation
 
-The IBM Security Verify Access operator in essence is made up of 2 components:
+The IBM Verify Identity Access operator in essence is made up of 2 components:
 
 1. The custom resource definition
 2. The controller application
 
-Each of these needs to be deployed into the Kubernetes environment before the operator can function.  The definitions for these resources are published with the IBM Security Verify Access Operator GitHub release in a single `bundle.yaml` file.  
+Each of these needs to be deployed into the Kubernetes environment before the operator can function.  The definitions for these resources are published with the IBM Verify Identity Access Operator GitHub release in a single `bundle.yaml` file.  
 
 To see a list of available releases refer to the releases page in GitHub: [https://github.com/IBM-Security/verify-access-operator/releases](https://github.com/IBM-Security/verify-access-operator/releases).
 
@@ -101,7 +103,7 @@ kubectl get deployment -n verify-access-operator-system
 NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
 verify-access-operator-controller-manager   1/1     1            1           21s
 ```
-At this point the IBM Security Verify Access operator has been deployed and is operational.  Any subsequent custom resources of the kind "IBMSecurityVerifyAccess" will result in the operator being invoked to create the deployment.
+At this point the IBM Verify Identity Access operator has been deployed and is operational.  Any subsequent custom resources of the kind "IBMSecurityVerifyAccess" will result in the operator being invoked to create the deployment.
 
 
 ## Usage
@@ -148,7 +150,7 @@ The following sections describe the various methods which can be used to access 
 The GET method can be used to retrieve a specific snapshot.   An example curl command which can be used to retrieve a snapshot is as follows:
 
 ```shell
-curl -k -u $USER:$RO_PWD -O $URL/snapshots/isva_10.0.5.0_published.snapshot
+curl -k -u $USER:$RO_PWD -O $URL/snapshots/ivia_10.0.5.0_published.snapshot
 ```
 
 #### POST
@@ -166,7 +168,7 @@ The service names used in the `modified` query string argument is as follows:
 An example curl command which can be used to upload a new snapshot is as follows:
 
 ```shell
-curl -k -u $USER:$RW_PWD -F 'file=@/var/shared/snapshots/isva_10.0.5.0_published.snapshot' $URL/snapshots/isva_10.0.5.0_published.snapshot?modified=wrp:default,runtime
+curl -k -u $USER:$RW_PWD -F 'file=@/var/shared/snapshots/ivia_10.0.5.0_published.snapshot' $URL/snapshots/ivia_10.0.5.0_published.snapshot?modified=wrp:default,runtime
 ```
 
 #### DELETE
@@ -174,13 +176,13 @@ curl -k -u $USER:$RW_PWD -F 'file=@/var/shared/snapshots/isva_10.0.5.0_published
 The DELETE method can be used to delete a specific snapshot.  An example curl command which can be used to delete a snapshot is as follows:
 
 ```shell
-curl -k -u $USER:$RW_PWD -X DELETE $URL/snapshots/isva_10.0.5.0_published.snapshot
+curl -k -u $USER:$RW_PWD -X DELETE $URL/snapshots/ivia_10.0.5.0_published.snapshot
 ```
 
 ### Partitioning the Cluster
 It is important to be able to partition the environment so that the same Kubernetes cluster can be used for test/development/production/etc.  To this end a snapshot identifier can be specified when deploying a new worker container - this is an optional part of the custom resource definition of the operator.  
 
-The name of the snapshot which is used by the container is then constructed from the snapshot identifier, as: `isva_<version>_<snapshot-id>.snapshot`
+The name of the snapshot which is used by the container is then constructed from the snapshot identifier, as: `ivia_<version>_<snapshot-id>.snapshot`
      
 The operator will be able to store multiple snapshots, and on a snapshot update will only perform a rolling restart on those deployments which are using the updated snapshot.
 
@@ -191,7 +193,7 @@ The configuration container can also be configured to use a snapshot with a spec
 
 In order to deploy a worker container using the operator a new IBMSecurityVerifyAccess custom resource must be created in the environment. 
 
-The following example (isva-wrp.yaml) shows the custom resource for a new worker container:
+The following example (ivia-wrp.yaml) shows the custom resource for a new worker container:
 
 ```yaml
 apiVersion: ibm.com/v1
@@ -199,11 +201,11 @@ kind: IBMSecurityVerifyAccess
 
 metadata:
   # The name which will be give to the deployment.
-  name: isva-sample
+  name: ivia-sample
 
 spec:
   # The name of the image which will be used in the deployment.
-  image: "icr.io/isva/verify-access-wrp:10.0.5.0"
+  image: "icr.io/ivia/ivia-wrp:11.0.0.0"
 
   # The number of pods which will be started for the deployment.
   replicas: 1
@@ -224,7 +226,7 @@ spec:
   # fixpacks:
   #   - "test.fixpack"
 
-  # The name of the Verify Access instance which is being deployed.  This value
+  # The name of the Verify Identity Access instance which is being deployed.  This value
   # is only used for WRP and DSC deployments and is ignored for Runtime
   # deployments.  
   instance: default
@@ -237,11 +239,11 @@ spec:
   # the pod.  More info can be found at:
   #     https://kubernetes.io/docs/concepts/storage/volumes
   volumes:
-    - name: isva-config
+    - name: ivia-config
       emptyDir: {}
 
   # The list of references to secrets in the same namespace to use for the
-  # pulling of the Verify Access image.
+  # pulling of the Verify Identity Access image.
   # imagePullSecrets:
   #   - name:my-secret
 
@@ -250,21 +252,21 @@ spec:
 
   # The X509 certificate to verify the connection to the configuration snapshot
   # service. The default value for this property is "operator", which reads the "tls.cert"
-  # value from the verify-access-operator secret created in the namespace that the Verify
+  # value from the verify-access-operator secret created in the namespace that the Verify Identity 
   # Access pods are deployed to.
   snapshotTLSCacert: "operator"
 
 
   # The IBM License Metric Tool annotations to add to the runtime container. These annotations a required
-  # by IBM to track license useage for the IBM Security Verfy Access product. Administartors have the option
+  # by IBM to track license useage for the IBM Verify Identity Access product. Administartors have the option
   # of using licence codes for WebSEAL, Advanced Access Cotnrol, Federation or Enterprise; as well as production
-  # or non-production (development) licenses. The actual license codes you sould deploy will depend on your 
+  # or non-production (development) licenses. The actual license codes you should deploy will depend on your 
   # licensing agreement with IBM.
   ilmtAnnotations:
-    module: welseal
+    module: webseal
     production: true
 
-  # Administarators can optionally set additional annotations to add to deployed Verify Access runtime
+  # Administarators can optionally set additional annotations to add to deployed Verify Identity Access runtime
   # containers. This may be used for integration with third party applications such as log aggregation 
   # or infrastructure monitoring tools. Character restrictions for custom annotations are the same for
   # any other Kubernets annotation.
@@ -306,7 +308,7 @@ spec:
 The following command can be used to create the deployment from this file:
 
 ```shell
-kubectl apply -f isva-wrp.yaml
+kubectl apply -f ivia-wrp.yaml
 ```
 
 #### Container Defaults
@@ -395,14 +397,14 @@ An example NodePort service definition is provided below:
 apiVersion: v1
 kind: Service
 metadata:
-  name: isva-sample
+  name: ivia-sample
 spec:
   ports:
     - port: 9443
-      name: isva-sample
+      name: ivia-sample
       protocol: TCP
       nodePort: 30443
   selector:
-    app: isva-sample
+    app: ivia-sample
   type: NodePort
 ```

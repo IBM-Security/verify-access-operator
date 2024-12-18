@@ -15,4 +15,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: icr.io/isva/verify-access-operator
-  newTag: 24.10.0
+  newTag: 24.12.0
