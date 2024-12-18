@@ -434,7 +434,7 @@ func (mgr *SnapshotMgr) serve(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if strings.HasPrefix(r.URL.Path, "/snapshots/") {
 		basePath := filepath.Base(filepath.Clean(r.URL.Path))
-		hasValidPrefix := (strings.HasPrefix(basePath, "ivia_") || strings.HasPrefix(basePath, "isva_")
+		hasValidPrefix := (strings.HasPrefix(basePath, "ivia_") || strings.HasPrefix(basePath, "isva_"))
 		if r.URL.Path == "/snapshots/"+basePath &&
 			hasValidPrefix &&
 			strings.HasSuffix(basePath, ".snapshot") {
