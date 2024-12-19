@@ -29,12 +29,12 @@ spec:
         name: ''
         version: v1
       specDescriptors:
-      - description: The name of the IBM Security Verify Access image to be used.
+      - description: The name of the IBM Verify Identity Access image to be used.
         displayName: Image
         path: image
         x-descriptors:
           - 'urn:alm:descriptor:com.tectonic.ui:text'
-      - description: The name of the Verify Access instance which is being deployed.  This value is only used for WRP and DSC deployments and is ignored for Runtime deployments.  
+      - description: The name of the Verify Identity Access instance which is being deployed.  This value is only used for WRP and DSC deployments and is ignored for Runtime deployments.  
         displayName: Instance
         path: instance
         x-descriptors:
@@ -88,9 +88,9 @@ spec:
   - identity and access
   - security
   links:
-  - name: Verify Access Product Information
+  - name: Verify Identity Access Product Information
     url: https://www.ibm.com/au-en/products/verify-access
-  - name: Verify Access Documentation
+  - name: Verify Identity Access Documentation
     url: https://www.ibm.com/docs/en/sva
   maintainers:
   - email: isamdev@au1.ibm.com
