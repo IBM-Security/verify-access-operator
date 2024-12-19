@@ -434,9 +434,9 @@ func (mgr *SnapshotMgr) serve(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if strings.HasPrefix(r.URL.Path, "/snapshots/") {
 		basePath := filepath.Base(filepath.Clean(r.URL.Path))
-
+		hasValidPrefix := (strings.HasPrefix(basePath, "ivia_") || strings.HasPrefix(basePath, "isva_"))
 		if r.URL.Path == "/snapshots/"+basePath &&
-			strings.HasPrefix(basePath, "isva_") &&
+			hasValidPrefix &&
 			strings.HasSuffix(basePath, ".snapshot") {
 			isValid = true
 		}
@@ -788,7 +788,7 @@ func (mgr *SnapshotMgr) generateKey() (cert string, key string, err error) {
 		Bytes: derBytes,
 	})
 
-	cert = out.String()
+	cert = strings.TrimSuffix(out.String(), "\n")
 
 	/*
 	 * Convert the key.
@@ -801,7 +801,12 @@ func (mgr *SnapshotMgr) generateKey() (cert string, key string, err error) {
 		Bytes: x509.MarshalPKCS1PrivateKey(priv),
 	})
 
-	key = out.String()
+	/*
+	 * For some reason when creating a secret from this value, sometimes the trailing new line
+	 * is removed. . . this breaks the update checking done when re-deploying containers, so lets
+	 * try and fix it here
+	 */
+	key = strings.TrimSuffix(out.String(), "\n")
 
 	return
 }

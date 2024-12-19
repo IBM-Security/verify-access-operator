@@ -14,6 +14,12 @@ package controllers
 const k8sNamespaceFile string = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 
 /*
+ * THe name of the kubernetes file which is used to mount the CA X509 for the
+ * operator's snapshot management service.
+ */
+const k8sSnapMgrCertFile string = "/tmp/verify-access-operator.crt"
+
+/*
  * The name which is given to our operator.  This same name will also be
  * used as the name of the secret which is generated for the operator.
  */

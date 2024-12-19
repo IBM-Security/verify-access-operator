@@ -312,14 +312,18 @@ func (r *IBMSecurityVerifyAccessReconciler) createSecret(
 			"Secret.Name", operatorName)
 		var requireUpdate bool
 		for k, v := range secret.Data {
-			strVal := fmt.Sprintf("%s", v)
-			if _, ok := r.snapshotMgr.creds[k]; ok {
-				if r.snapshotMgr.creds[k] != strVal {
+			secVal := string(v[:])
+			myVal, ok := r.snapshotMgr.creds[k]
+			if ok {
+				if secVal != myVal {
 					requireUpdate = true
 				}
 			} else {
 				r.Log.V(1).Info(fmt.Sprintf("Unknown key [%s] found in verify-access-operator secret!", k))
 			}
+		}
+		if len(secret.Data) < 4 { // 5 if rwPwd is defined, legacy is len 3 (missing tls.cert)
+			requireUpdate = true
 		}
 		r.Log.V(7).Info(fmt.Sprintf("Secret require update %t", requireUpdate))
 		if requireUpdate == true {
@@ -436,7 +440,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 	if livenessProbe == nil {
 		livenessProbe = &corev1.Probe{
 			TimeoutSeconds: 3,
-			Handler: corev1.Handler{
+			ProbeHandler: corev1.ProbeHandler{
 				Exec: &corev1.ExecAction{
 					Command: []string{
 						"/sbin/health_check.sh",
@@ -452,7 +456,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 	if readinessProbe == nil {
 		readinessProbe = &corev1.Probe{
 			TimeoutSeconds: 3,
-			Handler: corev1.Handler{
+			ProbeHandler: corev1.ProbeHandler{
 				Exec: &corev1.ExecAction{
 					Command: []string{
 						"/sbin/health_check.sh",
@@ -468,7 +472,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 			InitialDelaySeconds: 5,
 			TimeoutSeconds:      20,
 			FailureThreshold:    30,
-			Handler: corev1.Handler{
+			ProbeHandler: corev1.ProbeHandler{
 				Exec: &corev1.ExecAction{
 					Command: []string{
 						"/sbin/health_check.sh",
@@ -539,12 +543,18 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 	/* Add TLS CAcert properties if they exist, else use kubernetes
 	   PKI as the default
 	*/
+	addSnapMgrCert := false
 	if m.Spec.SnapshotTLSCacert != "" {
 		env = append(env, corev1.EnvVar{
 			Name:  "CONFIG_SERVICE_TLS_CACERT",
 			Value: m.Spec.SnapshotTLSCacert,
 		})
+		if m.Spec.SnapshotTLSCacert == "operator" {
+			addSnapMgrCert = true
+		}
+
 	} else {
+		addSnapMgrCert = true
 		env = append(env, corev1.EnvVar{
 			Name:  "CONFIG_SERVICE_TLS_CACERT",
 			Value: "operator",
@@ -583,6 +593,38 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 		})
 	}
 
+	maxVolMnts := len(m.Spec.Container.VolumeMounts)
+	volMnts := make([]corev1.VolumeMount, 0, maxVolMnts+1)
+	copy(volMnts, m.Spec.Container.VolumeMounts)
+	maxVols := len(m.Spec.Volumes)
+	vols := make([]corev1.Volume, 0, maxVols+1)
+	copy(vols, m.Spec.Volumes)
+	if addSnapMgrCert == true {
+		r.Log.V(5).Info("Adding snapshot manager service TLS certificate to deployment.")
+		//Mount the operator cert as a file here. This will avoid permissions issues
+		//when service accounts try to read the verify-access-operator secret at
+		//runtime.
+		volMnts = append(volMnts, corev1.VolumeMount{
+			Name:      operatorName,
+			ReadOnly:  true,
+			MountPath: k8sSnapMgrCertFile,
+			SubPath:   certFieldName,
+		})
+		vols = append(vols, corev1.Volume{
+			Name: operatorName,
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: operatorName,
+					Items: []corev1.KeyToPath{
+						corev1.KeyToPath{
+							Key:  certFieldName,
+							Path: certFieldName,
+						},
+					},
+				},
+			},
+		})
+	}
 	/*
 	 * Set up the rest of the deployment descriptor.
 	 */
@@ -603,7 +645,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
-					Volumes:            m.Spec.Volumes,
+					Volumes:            vols,
 					ImagePullSecrets:   m.Spec.ImagePullSecrets,
 					ServiceAccountName: m.Spec.ServiceAccountName,
 					Containers: []corev1.Container{{
@@ -619,7 +661,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 						SecurityContext: m.Spec.Container.SecurityContext,
 						StartupProbe:    startupProbe,
 						VolumeDevices:   m.Spec.Container.VolumeDevices,
-						VolumeMounts:    m.Spec.Container.VolumeMounts,
+						VolumeMounts:    volMnts,
 					}},
 				},
 			},
@@ -632,7 +674,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 		annotations := map[string]string{
 			"productMetric":            "PROCESSOR_VALUE_UNIT",
 			"productChargedContainers": "All",
-			"productName":              "IBM Security Verify Access Virtual Edition",
+			"productName":              "IBM Verify Identity Access Virtual Edition",
 			"productId":                "e2ba21cf5df245bb8524be1957857d9f",
 		}
 		prod := m.Spec.LicenseAnnotations.Production
@@ -640,34 +682,34 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 		switch module {
 		case "access_control":
 			if prod == false {
-				annotations["productName"] = "IBM Security Verify Access Virtual Edition AAC Module Non-Production AOS"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Edition AAC Module Non-Production AOS"
 				annotations["productId"] = "707987d5b0ca48e8af8e5856c027980f"
 			} else {
-				annotations["productName"] = "IBM Security Verify Access Virtual Edition AAC Module AOS"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Edition AAC Module AOS"
 				annotations["productId"] = "25d814176e0f4f21b64db66b916414d4"
 			}
 
 		case "federation":
 			if prod == false {
-				annotations["productName"] = "IBM Security Verify Access Virtual Ed Federation Module Non-Production AOS"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Ed Federation Module Non-Production AOS"
 				annotations["productId"] = "01a9d83608044a4687b3d29a0d4d0a35"
 			} else {
-				annotations["productName"] = "IBM Security Verify Access Virtual Edition Federation Module AOS"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Edition Federation Module AOS"
 				annotations["productId"] = "13ce5584032a42eab5704711369a11a4"
 			}
 
 		case "enterprise":
 			if prod == false {
-				annotations["productName"] = "IBM Security Verify Access Virtual Enterprise Edition Non-Production"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Enterprise Edition Non-Production"
 				annotations["productId"] = "de0d1dce07f145ce9380be5182a68544"
 			} else {
-				annotations["productName"] = "IBM Security Verify Access Virtual Enterprise Edition"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Enterprise Edition"
 				annotations["productId"] = "62b1cf23e32140a684284a0cf9a37329"
 			}
 
 		default:
 			if prod == false {
-				annotations["productName"] = "IBM Security Verify Access Virtual Edition Non-Production"
+				annotations["productName"] = "IBM Verify Identity Access Virtual Edition Non-Production"
 				annotations["productId"] = "8e4a78ab1e9249b1b46b6870babf4945"
 			} // else we use the default
 		}
