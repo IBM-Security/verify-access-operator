@@ -1,5 +1,5 @@
 /*
- * Copyright contributors to the IBM Security Verify Access Operator project
+ * Copyright contributors to the IBM Verify Identity Access Operator project
  */
 
 package v1
@@ -175,7 +175,7 @@ type IBMSecurityVerifyAccessSpec struct {
 	SnapshotSecrets string `json:"snapshotSecrets"`
 
 	//+kubebuilder:default=operator
-	// SnapshotTLSCacert is a string which defines how the Verify Access runtime containers
+	// SnapshotTLSCacert is a string which defines how the Verify Identity Access runtime containers
 	// verify connections to the snapshot management service. This option is the equivalent
 	// of setting the CONFIG_SERVICE_TLS_CACERT environment property. The default option for this
 	// property is to read the X509 certificate for the Operator's snapshot management service
@@ -192,7 +192,7 @@ type IBMSecurityVerifyAccessSpec struct {
 	// +optional
 	Fixpacks []string `json:"fixpacks,omitempty"`
 
-	// Instance is the name of the Verify Access instance which is being
+	// Instance is the name of the Verify Identity Access instance which is being
 	// started.  This value is only used for WRP and DSC deployments and is
 	// ignored for Runtime deployments.
 	// Defaults to 'default'.

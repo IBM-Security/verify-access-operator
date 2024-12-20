@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright contributors to the IBM Security Verify Access Operator project
+# Copyright contributors to the IBM Verify Identity Access Operator project
 ##############################################################################
 
 # Our build image is based on the RedHat Universal Base Image (ubi)
@@ -23,5 +23,5 @@ LABEL maintainer="isamdev@au.ibm.com" \
     product="IBM Security Verify Access" \
     documentation="https://www.ibm.com/docs/en/sva/latest?topic=web-webseal-overview" \
     product_information="https://www.ibm.com/au-en/products/verify-access" \
-    copyright="Copyright contributors to the IBM Security Verify Access Operator project"
+    copyright="Copyright contributors to the IBM Verify Identity Access Operator project"
 
