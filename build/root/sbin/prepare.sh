@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##############################################################################
-# Copyright contributors to the IBM Security Verify Access Operator project
+# Copyright contributors to the IBM Verify Identity Access Operator project
 ##############################################################################
 
 set -e

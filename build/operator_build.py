@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Copyright contributors to the IBM Security Verify Access Operator project
+Copyright contributors to the IBM Verify Identity Access Operator project
 
 This script is designed to handle the management of the Verify Access operator
 docker build image and containers.  The usage option can be used to provide 

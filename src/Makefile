@@ -1,4 +1,4 @@
-# Copyright contributors to the IBM Security Verify Access Operator project
+# Copyright contributors to the IBM Verify Identity Access Operator project
 
 # VERSION defines the project version for the bundle.
 # Update this value when you upgrade the version of your project.
