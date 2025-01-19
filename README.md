@@ -94,7 +94,7 @@ To see a list of available releases refer to the releases page in GitHub: [https
 The following command can be used to deploy the operator directly from the definition published to GitHub:
 
 ```shell
-kubectl create -f https://github.com/IBM-Security/verify-access-operator/releases/download/v23.3.0/bundle.yaml
+kubectl create -f https://github.com/IBM-Security/verify-access-operator/releases/download/v24.12.0/bundle.yaml
 ```
 After executing this command the operator will be deployed to a newly created namespace: `verify-access-operator-system`.  The following command can be used to validate that the operator has been deployed correctly.  The available field should be set to "1". Note that this may take a few minutes.
 
