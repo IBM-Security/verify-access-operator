@@ -594,10 +594,10 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 	}
 
 	maxVolMnts := len(m.Spec.Container.VolumeMounts)
-	volMnts := make([]corev1.VolumeMount, 0, maxVolMnts+1)
+	volMnts := make([]corev1.VolumeMount, maxVolMnts, maxVolMnts+1)
 	copy(volMnts, m.Spec.Container.VolumeMounts)
 	maxVols := len(m.Spec.Volumes)
-	vols := make([]corev1.Volume, 0, maxVols+1)
+	vols := make([]corev1.Volume, maxVols, maxVols+1)
 	copy(vols, m.Spec.Volumes)
 	if addSnapMgrCert == true {
 		r.Log.V(5).Info("Adding snapshot manager service TLS certificate to deployment.")
