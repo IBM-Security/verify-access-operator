@@ -134,7 +134,7 @@ type ILMTAnnotations struct {
 	Production bool `json:"production"`
 }
 
-// Custom annotations to add to deployed Verify Access runtime container.
+// Custom annotations to add to deployed Verify Identity Access runtime container.
 type CustomAnnotation struct {
 	// Key of the annotation to create.
 	Key string `json:"key" protobuf:"bytes,64,rep,name=key"`
