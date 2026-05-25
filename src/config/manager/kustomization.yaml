@@ -14,5 +14,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: icr.io/isva/verify-access-operator
-  newTag: 24.12.0
+  newName: localhost:32000/verify-access-operator
+  newTag: dev-20260525-083948

@@ -83,6 +83,8 @@ const dataRoot string = "/data"
 /*
  * The maximum amount of memory which should be used when receiving a
  * file.
+ * Some clients have reproted multi-part buffer of 4kB, causing an 
+ * exception here. Increasing to 1MB.
  */
 
-const maxMemory int64 = 1024
+const maxMemory int64 = 1024 * 1024  // 1 MB
