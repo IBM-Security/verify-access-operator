@@ -75,7 +75,7 @@ To install the IBM Verify Identity Access operator from OperatorHub.io:
 kubectl get csv -n operators
 
 NAME                              DISPLAY                               VERSION   REPLACES   PHASE
-verify-access-operator.v24.12.0   IBM Verify Identity Access Operator   24.12.0              Succeeded
+verify-access-operator.v26.5.0    IBM Verify Identity Access Operator   26.5.0    25.4.0     Succeeded
 ``` 
 
 At this point the Operator Lifecycle Manager has been installed into the Kubernetes cluster, the IBM Verify Identity Access operator has been deployed and a subscription has been created that will monitor for any updates to the operator on OperatorHub.io. The IBM Verify Identity Access operator is now operational and any subsequent custom resources of the kind "IBMSecurityVerifyAccess" will result in the operator being invoked to create the deployment.
@@ -94,7 +94,7 @@ To see a list of available releases refer to the releases page in GitHub: [https
 The following command can be used to deploy the operator directly from the definition published to GitHub:
 
 ```shell
-kubectl create -f https://github.com/IBM-Security/verify-access-operator/releases/download/v24.12.0/bundle.yaml
+kubectl create -f https://github.com/IBM-Security/verify-access-operator/releases/latest/download/bundle.yaml
 ```
 After executing this command the operator will be deployed to a newly created namespace: `verify-access-operator-system`.  The following command can be used to validate that the operator has been deployed correctly.  The available field should be set to "1". Note that this may take a few minutes.
 

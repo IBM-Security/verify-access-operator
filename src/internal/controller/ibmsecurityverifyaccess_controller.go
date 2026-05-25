@@ -391,14 +391,14 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 
 	serviceName := "unknown"
 	/**
-	 * There is an edge case where this regex breaks if the image contains 
+	 * There is an edge case where this regex breaks if the image contains
 	 * port information. So we first split on the expeced domain.name/image-name
 	 * so we never have port info when we split on ":"
-	 * First / msut occur after port, and will always contain the last part of the image 
+	 * First / msut occur after port, and will always contain the last part of the image
 	 * name (with the -<service> suffix)
-	*/
-	rgyImageComponent := strings.SplitN(m.Spec.Image, "/", 2); //
-	imageComponent := strings.Split(rgyImageComponent[len(rgyImageComponent) - 1], ":")[0]
+	 */
+	rgyImageComponent := strings.SplitN(m.Spec.Image, "/", 2) //
+	imageComponent := strings.Split(rgyImageComponent[len(rgyImageComponent)-1], ":")[0]
 
 	if strings.HasSuffix(imageComponent, "wrp") {
 		if m.Spec.Instance != "" {

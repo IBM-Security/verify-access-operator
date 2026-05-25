@@ -1060,8 +1060,8 @@ spec:
                   The set of custom annotations to add to the container being created.
                   Cannot be updated.
                 items:
-                  description: Custom annotations to add to deployed Verify Identity Access
-                    runtime container.
+                  description: Custom annotations to add to deployed Verify Identity
+                    Access runtime container.
                   properties:
                     key:
                       description: Key of the annotation to create.
