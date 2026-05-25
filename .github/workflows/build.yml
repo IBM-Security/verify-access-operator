@@ -49,6 +49,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      # Install the setup-envtest helper and fetch the envtest assets up-front.
+      - name: Set up envtest assets
+        run: |
+          go install sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.20
+          echo "${HOME}/go/bin" >> "${GITHUB_PATH}"
+          echo "KUBEBUILDER_ASSETS=$(${HOME}/go/bin/setup-envtest use --bin-dir ${RUNNER_TEMP}/kubebuilder-assets -p path)" >> "${GITHUB_ENV}"
+
       # Download and install the operator-sdk.  These instructions have
       # been copied from the official GO installation guide.
       - name: Set up OperatorSDK
