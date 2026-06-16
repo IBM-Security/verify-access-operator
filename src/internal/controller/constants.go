@@ -88,3 +88,18 @@ const dataRoot string = "/data"
  */
 
 const maxMemory int64 = 1024 * 1024 // 1 MB
+
+/*
+ * Volume names for readonly filesystem support.
+ */
+
+const ephemeralVolumeName string = "ephemeral-storage"
+const initContainerName string = "populate-volumes"
+
+/*
+ * Environment variable names for init container.
+ */
+
+const initVolumesEnvVar string = "INIT_VOLUMES"
+const initVerboseEnvVar string = "INIT_VERBOSE"
+const additionalWritablePathsEnvVar string = "ADDITIONAL_WRITABLE_VOLUMES"

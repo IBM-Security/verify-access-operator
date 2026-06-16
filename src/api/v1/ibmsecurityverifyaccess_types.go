@@ -142,6 +142,33 @@ type CustomAnnotation struct {
 	Value string `json:"value" protobuf:"bytes,64,rep,name=value"`
 }
 
+// ReadonlyRootFilesystem defines the configuration for mounting a readonly root filesystem
+// with a persistent volume for writable directories.
+type ReadonlyRootFilesystem struct {
+	// Enabled indicates whether the readonly root filesystem should be configured.
+	// When enabled, the container's root filesystem will be mounted as readonly,
+	// and a persistent volume will be used for directories that require write access.
+	Enabled bool `json:"enabled"`
+
+	// WritableVolumeName is the name of the volume to use for
+	// writable directories. This field is required when enabled is true.
+	// +optional
+	WritableVolumeName string `json:"writableVolumeName,omitempty"`
+
+	// VerboseInitContainer indicates whether the init container volume population script
+	// should run in verbose mode. When enabled, detailed logging will be output during
+	// the volume initialisation process.
+	// +kubebuilder:default=false
+	// +optional
+	VerboseInitContainer bool `json:"verboseInitContainer,omitempty"`
+
+	// AdditionalWritablePaths is an optional list of additional file paths that should
+	// be made writable when using a readonly root filesystem. These paths will be
+	// configured to allow write access in addition to the default writable directories.
+	// +optional
+	AdditionalWritablePaths []string `json:"additionalWritablePaths,omitempty"`
+}
+
 // IBMSecurityVerifyAccessSpec defines the desired state of an
 // IBMSecurityVerifyAccess resource.
 type IBMSecurityVerifyAccessSpec struct {
@@ -248,6 +275,13 @@ type IBMSecurityVerifyAccessSpec struct {
 	// Cannot be updated.
 	// +optional
 	Container IBMSecurityVerifyAccessContainer `json:"container,omitempty"`
+
+	// ReadonlyRootFilesystem enables enhanced security by mounting the container's root
+	// filesystem as readonly, preventing runtime modifications. Writable directories are
+	// provided via a persistent volume and are configured during initialisation. Only supported
+	// for IVIA versions 11.0.3+.
+	// +optional
+	ReadonlyRootFilesystem *ReadonlyRootFilesystem `json:"readonlyRootFilesystem,omitempty"`
 }
 
 // IBMSecurityVerifyAccessStatus defines the observed state of an

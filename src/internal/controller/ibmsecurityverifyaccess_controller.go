@@ -101,6 +101,41 @@ func (r *IBMSecurityVerifyAccessReconciler) Reconcile(
 	}
 
 	/*
+	 * Validate logic for readonlyRootFileSystem if enabled
+	 */
+	if verifyaccess.Spec.ReadonlyRootFilesystem != nil &&
+		verifyaccess.Spec.ReadonlyRootFilesystem.Enabled {
+
+		// Ensure that a volume is specified
+		if verifyaccess.Spec.ReadonlyRootFilesystem.WritableVolumeName == "" {
+			// Create a proper error
+			validationErr := fmt.Errorf("spec.readonlyRootFilesystem.writableVolumeName is required when readonlyRootFilesystem.enabled is true")
+			r.Log.Error(validationErr, "Invalid specification")
+
+			r.setCondition(validationErr, true, ctx, verifyaccess)
+
+			return ctrl.Result{}, validationErr
+		}
+
+		// Check that the volume specified is defined within the volumes array
+		foundVolume := false
+		for _, val := range verifyaccess.Spec.Volumes {
+			if val.Name == verifyaccess.Spec.ReadonlyRootFilesystem.WritableVolumeName {
+				foundVolume = true
+				break
+			}
+		}
+		if !foundVolume {
+			validationErr := fmt.Errorf("readonlyRootFilesystem.writableVolumeName %s not found in spec.volumes",
+				verifyaccess.Spec.ReadonlyRootFilesystem.WritableVolumeName)
+			r.Log.Error(validationErr, "Invalid specification")
+
+			r.setCondition(validationErr, true, ctx, verifyaccess)
+			return ctrl.Result{}, validationErr
+		}
+	}
+
+	/*
 	 * Check if the deployment already exists, and if one doesn't we create a
 	 * new one now.
 	 */
@@ -115,6 +150,7 @@ func (r *IBMSecurityVerifyAccessReconciler) Reconcile(
 
 	if err != nil {
 		if errors.IsNotFound(err) {
+
 			/*
 			 * The deployment requires a secret which contains the snapshot
 			 * manager credentials.  We need to create the secret in the
@@ -353,10 +389,214 @@ func (r *IBMSecurityVerifyAccessReconciler) createSecret(
 /*****************************************************************************/
 
 /*
- * The following function is used to return a VerifyAccess Deployment object.
+ * readonlyRootFilesystemMountPaths defines the writable directory paths required for each
+ * service type. The map key is the service name prefix, and the value is
+ * a slice of absolute paths that need to be mounted as writable volumes.
+ */
+var readonlyRootFilesystemMountPaths = map[string][]string{
+	"wrp":     {"/var", "/etc", "/usr/lib64/iss-pam"},
+	"runtime": {"/var", "/etc", "/opt/ibm/wlp", "/opt/java/jre/PolicyDirector"},
+	"dsc":     {"/var", "/etc"},
+}
+
+/*
+ * createVolumeMount constructs a VolumeMount with the specified parameters.
+ * This helper eliminates duplication in volume mount creation.
+ */
+func createVolumeMount(name, mountPath, subPath string) corev1.VolumeMount {
+	return corev1.VolumeMount{
+		Name:      name,
+		MountPath: mountPath,
+		SubPath:   subPath,
+	}
+}
+
+/*
+ * getVolumeMountsForService generates volume mounts for writable directories
+ * based on service type. For init containers, paths are prefixed with /mnt.
+ * For main containers, paths are direct.
+ * Returns an empty slice if the service name doesn't match any known prefix.
+ */
+func getVolumeMountsForService(
+	serviceName string,
+	writableVolumeName string,
+	isInitContainer bool,
+) []corev1.VolumeMount {
+	mountPathPrefix := ""
+	if isInitContainer {
+		mountPathPrefix = "/mnt"
+	}
+
+	// Find matching service prefix and get its mount paths
+	var paths []string
+	for prefix, mountPaths := range readonlyRootFilesystemMountPaths {
+		if strings.HasPrefix(serviceName, prefix) {
+			paths = mountPaths
+			break
+		}
+	}
+
+	// Build volume mounts from the configured paths
+	mounts := make([]corev1.VolumeMount, 0, len(paths))
+	for _, path := range paths {
+		mounts = append(mounts, createVolumeMount(
+			writableVolumeName,
+			mountPathPrefix+path,
+			strings.TrimPrefix(path, "/"),
+		))
+	}
+
+	return mounts
+}
+
+/*****************************************************************************/
+
+/*
+ * getEphemeralVolumeMounts generates ephemeral volume mounts for /tmp and /run directories.
+ * These mounts are the same for all service types.
+ */
+func getEphemeralVolumeMounts(
+	ephemeralVolumeName string,
+) []corev1.VolumeMount {
+	return []corev1.VolumeMount{
+		{
+			Name:      ephemeralVolumeName,
+			MountPath: "/tmp",
+			SubPath:   "tmp",
+		},
+		{
+			Name:      ephemeralVolumeName,
+			MountPath: "/run",
+			SubPath:   "run",
+		},
+	}
+}
+
+/*****************************************************************************/
+
+/*
+ * getPodSecurityContextForReadonlyFS generates pod-level security context
+ * when readonly filesystem is enabled.
+ */
+
+func getPodSecurityContextForReadonlyFS(
+	readonlyFSEnabled bool,
+) *corev1.PodSecurityContext {
+	if readonlyFSEnabled {
+		onRootMismatch := corev1.PodFSGroupChangePolicy("OnRootMismatch")
+		trueVar := true
+		return &corev1.PodSecurityContext{
+			FSGroupChangePolicy: &onRootMismatch,
+			RunAsNonRoot:        &trueVar,
+		}
+	}
+	return nil
+}
+
+/*****************************************************************************/
+
+/*
+ * getInitContainersForReadonlyFS generates init containers for readonly
+ * filesystem support.
+ */
+
+func getInitContainersForReadonlyFS(
+	readonlyFSEnabled bool,
+	m *ibmv1.IBMSecurityVerifyAccess,
+	serviceName string,
+) []corev1.Container {
+	if !readonlyFSEnabled {
+		return nil
+	}
+
+	trueVar := true
+	falseVar := false
+
+	// Build init container environment variables
+	initEnv := []corev1.EnvVar{
+		{Name: initVolumesEnvVar, Value: "true"},
+	}
+
+	if m.Spec.ReadonlyRootFilesystem.VerboseInitContainer {
+		initEnv = append(initEnv, corev1.EnvVar{
+			Name:  initVerboseEnvVar,
+			Value: "true",
+		})
+	}
+
+	volumeMounts := getVolumeMountsForService(
+		serviceName,
+		m.Spec.ReadonlyRootFilesystem.WritableVolumeName,
+		true, // isInitContainer
+	)
+
+	if len(m.Spec.ReadonlyRootFilesystem.AdditionalWritablePaths) > 0 {
+		// The env var is a comma separated list of the form <path>:/mnt<path>
+		// eg. /opt/custom:/mnt/opt/custom,/etc/customData:/mnt/etc/customData
+		paths := make([]string, len(m.Spec.ReadonlyRootFilesystem.AdditionalWritablePaths))
+		for i, path := range m.Spec.ReadonlyRootFilesystem.AdditionalWritablePaths {
+			paths[i] = path + ":/mnt" + path
+			// Ensure to add the additional writable paths to the volume mounts too
+			volumeMounts = append(volumeMounts, corev1.VolumeMount{
+				Name:      m.Spec.ReadonlyRootFilesystem.WritableVolumeName,
+				MountPath: "/mnt" + path,
+				SubPath:   strings.TrimPrefix(path, "/"),
+			})
+		}
+		initEnv = append(initEnv, corev1.EnvVar{
+			Name:  additionalWritablePathsEnvVar,
+			Value: strings.Join(paths, ","),
+		})
+	}
+
+	return []corev1.Container{{
+		Name:            initContainerName,
+		Image:           m.Spec.Image,
+		ImagePullPolicy: m.Spec.Container.ImagePullPolicy,
+		SecurityContext: &corev1.SecurityContext{
+			ReadOnlyRootFilesystem:   &trueVar,
+			AllowPrivilegeEscalation: &falseVar,
+			RunAsNonRoot:             &trueVar,
+			Capabilities: &corev1.Capabilities{
+				Drop: []corev1.Capability{"ALL"},
+			},
+		},
+		VolumeMounts: volumeMounts,
+		Env:          initEnv,
+	}}
+}
+
+/*****************************************************************************/
+
+/*
+ * getContainerSecurityContextForReadonlyFS updates container security context
+ * to enable readonly root filesystem when configured.
+ */
+
+func getContainerSecurityContextForReadonlyFS(
+	readonlyFSEnabled bool,
+	existingSecurityContext *corev1.SecurityContext,
+) *corev1.SecurityContext {
+	sc := existingSecurityContext
+	if readonlyFSEnabled {
+		if sc == nil {
+			sc = &corev1.SecurityContext{}
+		}
+		trueVar := true
+		sc.ReadOnlyRootFilesystem = &trueVar
+	}
+	return sc
+}
+
+/*****************************************************************************/
+
+/*
+ * deploymentForVerifyAccess creates a Deployment resource for IBM Security Verify Access.
  *
- * We map the following IBMSecurityVerifyAccess attributes to a corresponding
- * attribute in the Deployment structure:
+ * The function configures the deployment based on the provided IBMSecurityVerifyAccess spec,
+ * including container images, environment variables, volumes, and security contexts.
+ *
+ * Attribute Mapping:
  *
  *    IBMSecurityVerifyAccess spec | Deployment spec
  *    ---------------------------- | ---------------
@@ -371,7 +611,7 @@ func (r *IBMSecurityVerifyAccessReconciler) createSecret(
  *    serviceAccountName           | template.spec.serviceAccountName
  *    container                    | template.spec.containers[0]
  *
- * We will pre-propulate:
+ * Pre-populated Fields:
  *   - metadata
  *   - spec.selector
  *   - template.spec.containers[0].name
@@ -380,6 +620,16 @@ func (r *IBMSecurityVerifyAccessReconciler) createSecret(
  *   - template.spec.containers[0].readinessProbe
  *   - template.spec.containers[0].startupProbe
  *   - template.spec.containers[0].env (for CONFIG_SERVICE_XXX variables)
+ *
+ *
+ * When ReadonlyRootFilesystem.Enabled is true, the function:
+ *   - Configures pod-level security context with fsGroupChangePolicy and runAsNonRoot
+ *   - Creates an init container to populate writable directories from the specified volume
+ *   - Sets up volume mounts for writable paths (from PVC/volume in writableVolumeName)
+ *   - Adds ephemeral volumes for /tmp and /run directories
+ *   - Applies readonly root filesystem security context to the main container
+ * The writable directories are service-specific and defined in readonlyRootFilesystemMountPaths.
+ *
  */
 
 func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
@@ -415,6 +665,12 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 			serviceName = "dsc-1"
 		}
 	}
+
+	/*
+	 * Check if readonly root filesystem is enabled.
+	 */
+
+	readonlyFSEnabled := m.Spec.ReadonlyRootFilesystem != nil && m.Spec.ReadonlyRootFilesystem.Enabled
 
 	/*
 	 * The labels which are used in our deployment.
@@ -603,10 +859,10 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 
 	maxVolMnts := len(m.Spec.Container.VolumeMounts)
 	volMnts := make([]corev1.VolumeMount, 0, maxVolMnts+1)
-	copy(volMnts, m.Spec.Container.VolumeMounts)
+	volMnts = append(volMnts, m.Spec.Container.VolumeMounts...)
 	maxVols := len(m.Spec.Volumes)
 	vols := make([]corev1.Volume, 0, maxVols+1)
-	copy(vols, m.Spec.Volumes)
+	vols = append(vols, m.Spec.Volumes...)
 	if addSnapMgrCert == true {
 		r.Log.V(5).Info("Adding snapshot manager service TLS certificate to deployment.")
 		//Mount the operator cert as a file here. This will avoid permissions issues
@@ -633,6 +889,50 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 			},
 		})
 	}
+
+	/*
+	 * Add volume mounts for readonly filesystem.
+	 */
+
+	if readonlyFSEnabled {
+		// Add writable volume mounts
+		writableMounts := getVolumeMountsForService(
+			serviceName,
+			m.Spec.ReadonlyRootFilesystem.WritableVolumeName,
+			false, // isInitContainer
+		)
+		volMnts = append(volMnts, writableMounts...)
+
+		// Add ephemeral volume mounts
+		ephemeralMounts := getEphemeralVolumeMounts(
+			ephemeralVolumeName,
+		)
+		volMnts = append(volMnts, ephemeralMounts...)
+
+		// Add any additional writable paths
+		if len(m.Spec.ReadonlyRootFilesystem.AdditionalWritablePaths) > 0 {
+			for _, path := range m.Spec.ReadonlyRootFilesystem.AdditionalWritablePaths {
+				volMnts = append(volMnts, corev1.VolumeMount{
+					Name:      m.Spec.ReadonlyRootFilesystem.WritableVolumeName,
+					MountPath: path,
+					SubPath:   strings.TrimPrefix(path, "/"),
+				})
+			}
+		}
+	}
+
+	/*
+	 * Add ephemeral volume for readonly filesystem.
+	 */
+
+	if readonlyFSEnabled {
+		vols = append(vols, corev1.Volume{
+			Name: ephemeralVolumeName,
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		})
+	}
 	/*
 	 * Set up the rest of the deployment descriptor.
 	 */
@@ -656,6 +956,10 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 					Volumes:            vols,
 					ImagePullSecrets:   m.Spec.ImagePullSecrets,
 					ServiceAccountName: m.Spec.ServiceAccountName,
+					// Add pod-level security context for readonly filesystem
+					SecurityContext: getPodSecurityContextForReadonlyFS(readonlyFSEnabled),
+					// Add init containers for readonly filesystem
+					InitContainers: getInitContainersForReadonlyFS(readonlyFSEnabled, m, serviceName),
 					Containers: []corev1.Container{{
 						Env:             m.Spec.Container.Env,
 						EnvFrom:         m.Spec.Container.EnvFrom,
@@ -666,7 +970,7 @@ func (r *IBMSecurityVerifyAccessReconciler) deploymentForVerifyAccess(
 						Ports:           ports,
 						ReadinessProbe:  readinessProbe,
 						Resources:       m.Spec.Container.Resources,
-						SecurityContext: m.Spec.Container.SecurityContext,
+						SecurityContext: getContainerSecurityContextForReadonlyFS(readonlyFSEnabled, m.Spec.Container.SecurityContext),
 						StartupProbe:    startupProbe,
 						VolumeDevices:   m.Spec.Container.VolumeDevices,
 						VolumeMounts:    volMnts,
